@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { duckAudioForVideo, restoreAudioAfterVideo } from '../../hooks/useAudioManager'
 
 interface VideoPlayerProps {
   src: string
@@ -11,21 +12,40 @@ interface VideoPlayerProps {
 }
 
 export function VideoPlayer({ src, poster, onEnded, small = false, vertical = false, label }: VideoPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [playing, setPlaying] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [muted, setMuted] = useState(false)
-  const [fullscreen, setFullscreen] = useState(false)
+  const videoRef      = useRef<HTMLVideoElement>(null)
+  const containerRef  = useRef<HTMLDivElement>(null)
+  const [playing, setPlaying]       = useState(false)
+  const [progress, setProgress]     = useState(0)
+  const [muted, setMuted]           = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [hasError, setHasError] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [duration, setDuration]     = useState(0)
+  const [hasError, setHasError]     = useState(false)
+
+  // Restore music if this player unmounts while still playing
+  useEffect(() => {
+    return () => {
+      if (playing) restoreAudioAfterVideo()
+    }
+  }, [playing])
 
   const togglePlay = () => {
     const v = videoRef.current
     if (!v) return
-    if (v.paused) { v.play(); setPlaying(true) }
-    else { v.pause(); setPlaying(false) }
+    if (v.paused) {
+      v.play()
+      setPlaying(true)
+      duckAudioForVideo()
+    } else {
+      v.pause()
+      setPlaying(false)
+      restoreAudioAfterVideo()
+    }
+  }
+
+  const handleEnded = () => {
+    setPlaying(false)
+    restoreAudioAfterVideo()
+    onEnded?.()
   }
 
   const handleTimeUpdate = () => {
@@ -56,14 +76,11 @@ export function VideoPlayer({ src, poster, onEnded, small = false, vertical = fa
   const toggleFs = () => {
     if (!document.fullscreenElement) {
       containerRef.current?.requestFullscreen()
-      setFullscreen(true)
     } else {
       document.exitFullscreen()
-      setFullscreen(false)
     }
   }
 
-  // Placeholder if no source or error
   const showPlaceholder = hasError || !src
 
   return (
@@ -116,12 +133,12 @@ export function VideoPlayer({ src, poster, onEnded, small = false, vertical = fa
             muted={muted}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}
-            onEnded={() => { setPlaying(false); onEnded?.() }}
+            onEnded={handleEnded}
             onError={() => setHasError(true)}
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
 
-          {/* Play overlay */}
+          {/* Play overlay — shown when paused */}
           <AnimatePresence>
             {!playing && (
               <motion.div
@@ -168,7 +185,7 @@ export function VideoPlayer({ src, poster, onEnded, small = false, vertical = fa
               bottom: 0,
               left: 0,
               right: 0,
-              padding: '0.75rem 1rem 0.75rem',
+              padding: '0.75rem 1rem',
               background: 'linear-gradient(to top, rgba(10,8,18,0.8), transparent)',
               display: 'flex',
               flexDirection: 'column',
@@ -183,7 +200,6 @@ export function VideoPlayer({ src, poster, onEnded, small = false, vertical = fa
                 background: 'rgba(255,255,255,0.2)',
                 borderRadius: '2px',
                 cursor: 'pointer',
-                position: 'relative',
               }}
             >
               <div

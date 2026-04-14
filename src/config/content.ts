@@ -120,18 +120,18 @@ export const MEMORIES = [
 ]
 
 export const AUDIO_MAP: Record<string, string | null> = {
-  intro: null,
-  apology: null,
-  love: null,
-  memories: null,
-  letter: null,
-  video: null,
-  choice: null,
-  reconcile: null,
-  closure: null,
-  future: null,
-  easter: null,
-  creator: null,
+  intro:     '/assets/music/main.mp3',
+  apology:   '/assets/music/main.mp3',
+  love:      '/assets/music/main.mp3',
+  memories:  '/assets/music/main.mp3',
+  letter:    '/assets/music/main.mp3',
+  video:     null,   // video page has its own audio — keep silent
+  choice:    '/assets/music/main.mp3',
+  reconcile: '/assets/music/main.mp3',
+  closure:   '/assets/music/main.mp3',
+  future:    '/assets/music/main.mp3',
+  easter:    '/assets/music/main.mp3',
+  creator:   '/assets/music/main.mp3',
 }
 
 export const PAGE_ORDER = [

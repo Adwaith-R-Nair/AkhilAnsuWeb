@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/useAppStore'
 import { PageLayout } from '../components/layout/PageLayout'
 import { PageTransition } from '../components/transitions/PageTransition'
+import { duckAudioForVideo, restoreAudioAfterVideo } from '../hooks/useAudioManager'
 
 const FUTURE_VIDEOS = [
   { path: '/assets/ai-videos/future-1.mp4', label: 'A morning together' },
@@ -18,11 +19,23 @@ function VerticalVideoSlot({ path, label, index }: { path: string; label: string
   const [progress, setProgress] = useState(0)
   const [hasError, setHasError] = useState(false)
 
+  // Restore music if unmounted while playing
+  useEffect(() => {
+    return () => { if (playing) restoreAudioAfterVideo() }
+  }, [playing])
+
   const togglePlay = () => {
     const v = videoRef.current
     if (!v) return
-    if (v.paused) { v.play(); setPlaying(true) }
-    else { v.pause(); setPlaying(false) }
+    if (v.paused) {
+      v.play()
+      setPlaying(true)
+      duckAudioForVideo()
+    } else {
+      v.pause()
+      setPlaying(false)
+      restoreAudioAfterVideo()
+    }
   }
 
   const handleTimeUpdate = () => {
@@ -38,7 +51,10 @@ function VerticalVideoSlot({ path, label, index }: { path: string; label: string
     v.currentTime = ((e.clientX - rect.left) / rect.width) * v.duration
   }
 
-  const handleEnded = () => setPlaying(false)
+  const handleEnded = () => {
+    setPlaying(false)
+    restoreAudioAfterVideo()
+  }
 
   return (
     <motion.div

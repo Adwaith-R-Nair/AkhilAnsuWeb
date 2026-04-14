@@ -4,11 +4,18 @@ import { useAppStore } from '../../store/useAppStore'
 
 export function MusicPlayer() {
   const [expanded, setExpanded] = useState(false)
-  const { audioEnabled, setAudioEnabled, isMuted, setIsMuted, volume, setVolume, currentTrack } = useAppStore()
+  const {
+    audioEnabled, setAudioEnabled,
+    isMuted, setIsMuted,
+    volume, setVolume,
+    currentTrack,
+  } = useAppStore()
+
+  const isPlaying = audioEnabled && !!currentTrack && !isMuted
 
   const trackName = currentTrack
-    ? currentTrack.split('/').pop()?.replace(/\.\w+$/, '') || 'Unknown'
-    : 'No track playing'
+    ? currentTrack.split('/').pop()?.replace(/\.\w+$/, '') ?? 'playing'
+    : 'music off'
 
   return (
     <motion.div
@@ -37,9 +44,10 @@ export function MusicPlayer() {
         cursor: 'pointer',
       }}
     >
-      {/* Toggle audio */}
+      {/* Play / Pause toggle */}
       <button
         onClick={() => setAudioEnabled(!audioEnabled)}
+        title={audioEnabled ? 'Pause music' : 'Play music'}
         style={{
           background: 'none',
           border: 'none',
@@ -48,11 +56,38 @@ export function MusicPlayer() {
           color: audioEnabled ? 'var(--lav-500)' : 'var(--text-faint)',
           padding: 0,
           lineHeight: 1,
+          display: 'flex',
+          alignItems: 'center',
         }}
-        aria-label={audioEnabled ? 'Disable music' : 'Enable music'}
       >
-        {audioEnabled ? '♪' : '♩'}
+        {isPlaying ? '⏸' : '▶'}
       </button>
+
+      {/* Animated equaliser bars — visible when playing */}
+      <AnimatePresence>
+        {isPlaying && (
+          <motion.div
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 'auto' }}
+            exit={{ opacity: 0, width: 0 }}
+            style={{ display: 'flex', alignItems: 'flex-end', gap: '2px', height: '14px', overflow: 'hidden' }}
+          >
+            {[1, 1.6, 0.8, 1.4, 1].map((delay, i) => (
+              <motion.div
+                key={i}
+                animate={{ height: ['4px', '12px', '6px', '10px', '4px'] }}
+                transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.12, ease: 'easeInOut' }}
+                style={{
+                  width: '2px',
+                  borderRadius: '1px',
+                  background: 'var(--lav-400)',
+                  flexShrink: 0,
+                }}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {expanded && (
@@ -83,6 +118,7 @@ export function MusicPlayer() {
             {/* Mute toggle */}
             <button
               onClick={() => setIsMuted(!isMuted)}
+              title={isMuted ? 'Unmute' : 'Mute'}
               style={{
                 background: 'none',
                 border: 'none',
@@ -91,7 +127,6 @@ export function MusicPlayer() {
                 color: 'var(--text-muted)',
                 padding: 0,
               }}
-              aria-label={isMuted ? 'Unmute' : 'Mute'}
             >
               {isMuted ? '🔇' : '🔊'}
             </button>
@@ -102,12 +137,14 @@ export function MusicPlayer() {
               min={0}
               max={1}
               step={0.05}
-              value={volume}
-              onChange={(e) => setVolume(Number(e.target.value))}
-              style={{
-                width: '64px',
-                accentColor: 'var(--lav-500)',
+              value={isMuted ? 0 : volume}
+              onChange={(e) => {
+                const v = Number(e.target.value)
+                setVolume(v)
+                if (v > 0 && isMuted) setIsMuted(false)
+                if (v === 0) setIsMuted(true)
               }}
+              style={{ width: '64px', accentColor: 'var(--lav-500)' }}
             />
           </motion.div>
         )}

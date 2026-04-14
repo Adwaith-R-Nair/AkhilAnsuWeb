@@ -2,9 +2,11 @@ import { ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAppStore } from '../../store/useAppStore'
+import type { PageId } from '../../store/useAppStore'
 import { PAGE_LABELS } from '../../config/content'
 import { ProgressIndicator } from '../ui/ProgressIndicator'
 import { MusicPlayer } from '../ui/MusicPlayer'
+import { useAudioManager } from '../../hooks/useAudioManager'
 
 const NO_NAV_PAGES = ['/video', '/choice']
 
@@ -60,8 +62,11 @@ interface PageLayoutProps {
 export function PageLayout({ children, hideNav = false }: PageLayoutProps) {
   const location = useLocation()
   const navigate = useNavigate()
-  const { loaderDone, userChoice } = useAppStore()
+  const { loaderDone, userChoice, currentPage } = useAppStore()
   const pathname = location.pathname
+
+  // Drive background music for the current page
+  useAudioManager(currentPage as PageId)
 
   const showNav = loaderDone && !hideNav && !NO_NAV_PAGES.includes(pathname)
   const prevPath = getPrevPath(pathname)

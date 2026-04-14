@@ -59,7 +59,7 @@ export const useAppStore = create<AppState>((set) => ({
   easterEggUnlocked: false,
   setEasterEggUnlocked: (v) => set({ easterEggUnlocked: v }),
 
-  audioEnabled: false,
+  audioEnabled: true,
   setAudioEnabled: (v) => set({ audioEnabled: v }),
   isMuted: false,
   setIsMuted: (v) => set({ isMuted: v }),
