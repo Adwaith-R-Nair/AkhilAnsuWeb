@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* ── Backgrounds ─────────────────────────────────────────────────────── */
+  --bg-base:      #faf8ff;   /* near-white, barely lavender */
+  --bg-soft:      #f3eeff;
+  --bg-mist:      #ebe4ff;
+  --bg-parchment: #fef6f8;   /* warm rose-white for the letter */
+  --bg-overlay:   rgba(250, 248, 255, 0.92);
+
+  /* ── Lavender — slightly warmer & more saturated for richness ────────── */
+  --lav-900: #2e1a6a;
+  --lav-700: #5040a4;   /* refined indigo-purple, less blue */
+  --lav-500: #8368cc;   /* primary accent — warmer, more violet */
+  --lav-400: #a08ee0;   /* softer lavender, less grey */
+  --lav-300: #c0aff0;   /* light lavender */
+  --lav-200: #dbd0f8;
+  --lav-100: #ede9ff;
+
+  /* ── Blush / Mauve — shifted toward dusty mauve (less "hot pink") ────── */
+  --blush-700: #a04d68;   /* deep plum-rose */
+  --blush-600: #be6680;   /* rich mauve */
+  --blush-500: #cc7a94;   /* primary rose — dustier, more harmonious */
+  --blush-400: #dc9db5;   /* soft mauve */
+  --blush-300: #ecc0d0;   /* pale blush */
+  --blush-100: #faedf3;   /* very pale blush */
+
+  /* ── Midpoint — the bridge between lavender and mauve ───────────────── */
+  --lavrose:  #b080ba;   /* purple-pink halfway: used in gradients */
+
+  /* ── Text — deep, rich purple-toned for maximum contrast ────────────── */
+  --text-primary: #160c2a;   /* near-black, purple undertone */
+  --text-body:    #2c1a42;   /* deep purple, strong body contrast */
+  --text-muted:   #5e4a7a;   /* mid-purple, readable subtext */
+  --text-faint:   #9888b8;   /* soft, for labels & captions */
+
+  /* ── Accents ─────────────────────────────────────────────────────────── */
+  --accent:      var(--lav-500);
+  --accent-glow: rgba(131, 104, 204, 0.20);
+  --rose:        var(--blush-500);
+  --rose-glow:   rgba(204, 122, 148, 0.20);
+
+  /* ── Typography ──────────────────────────────────────────────────────── */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body:    'Cormorant Garamond', Georgia, serif;
+  --font-ui:      'DM Sans', system-ui, sans-serif;
+  --font-script:  'Dancing Script', cursive;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* ── Motion ──────────────────────────────────────────────────────────── */
+  --ease-silk:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-expo:   cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-in-out: cubic-bezier(0.87, 0, 0.13, 1);
+}
+
+/* ─── Reset & Base ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-body);
+  font-family: var(--font-body);
+  font-size: clamp(1.05rem, 1.9vw, 1.3rem);
+  line-height: 1.9;
+  overflow-x: hidden;
+}
+
+/* ─── Page wrapper — semi-transparent so the WebGL canvas stays alive.
+       42% white tint: canvas shows clearly, cards handle text clarity. ─── */
+.page-bg {
+  background:
+    radial-gradient(ellipse at 22% 14%, rgba(172, 152, 228, 0.18) 0%, transparent 58%),
+    radial-gradient(ellipse at 78% 88%, rgba(208, 158, 184, 0.14) 0%, transparent 52%),
+    rgba(250, 248, 255, 0.42);
+}
+
+/* ─── Noise grain — dialled low so text stays crisp ─── */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.16;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ─── Premium glass panel ─── */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 24px;
+  box-shadow:
+    0 1px 0   rgba(255, 255, 255, 0.95) inset,
+    0 4px 24px rgba(131, 104, 204, 0.10),
+    0 1px 6px  rgba(131, 104, 204, 0.07),
+    0 24px 48px rgba(0, 0, 0, 0.04);
+  outline: 1px solid rgba(192, 175, 240, 0.28);
+  outline-offset: -1px;
+}
+
+/* ─── Lavender tinted card ─── */
+.lav-card {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.70);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 0   rgba(255, 255, 255, 0.95) inset,
+    0 4px 20px rgba(131, 104, 204, 0.09),
+    0 16px 40px rgba(0, 0, 0, 0.03);
+  outline: 1px solid rgba(192, 175, 240, 0.25);
+  outline-offset: -1px;
+}
+
+/* ─── Soft shadow ─── */
+.soft-shadow {
+  box-shadow:
+    0 20px 60px rgba(131, 104, 204, 0.11),
+    0 4px 16px  rgba(0, 0, 0, 0.04);
+}
+
+/* ─── Section header area — floats over the semi-transparent page.
+       A barely-there glass backdrop so headings are always crisp. ─── */
+.page-header-area {
+  position: relative;
+  z-index: 1;
+}
+.page-header-area::before {
+  content: '';
+  position: absolute;
+  inset: -1.5rem -2rem;
+  border-radius: 20px;
+  background: rgba(250, 248, 255, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ─── Typography utilities ─── */
+.font-display { font-family: var(--font-display); }
+.font-heading  { font-family: var(--font-heading); }
+.font-body     { font-family: var(--font-body); }
+.font-ui       { font-family: var(--font-ui); }
+.font-script   { font-family: var(--font-script); }
+.font-mono     { font-family: var(--font-mono); }
+
+/* ── Gradient text — smooth 3-stop lavender → lavrose → mauve ── */
+.text-gradient {
+  background: linear-gradient(
+    128deg,
+    var(--lav-500)   0%,
+    var(--lavrose)  50%,
+    var(--blush-500) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Eyebrow label ── */
+.eyebrow {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--lav-500);
+  /* Clean drop-shadow — lifts text without blooming */
+  filter: drop-shadow(0 1px 6px rgba(255, 255, 255, 0.75));
+}
+
+/* ── Hero title ── */
+.hero-title {
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: clamp(4rem, 10vw, 9rem);
+  color: var(--text-primary);
+  line-height: 1.05;
+  filter: drop-shadow(0 2px 16px rgba(255, 255, 255, 0.65));
+}
+
+/* ── Section heading ── */
+.section-heading {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.15;
+  filter: drop-shadow(0 2px 16px rgba(255, 255, 255, 0.65));
+}
+
+/* ── Inside glass cards: kill the filter drop-shadow ── */
+.glass-panel .section-heading,
+.glass-panel .eyebrow,
+.lav-card .section-heading,
+.lav-card .eyebrow {
+  filter: none;
+}
+
+/* ─── Thin decorative rule ─── */
+.deco-rule {
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--lav-400), var(--blush-400), transparent);
+  margin: 1.25rem auto;
+}
+
+/* ─── Sparkle ─── */
+.sparkle {
+  position: absolute;
+  color: var(--lav-400);
+  font-size: 1rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ─── Scroll cue ─── */
+@keyframes bounce-y {
+  0%, 100% { transform: translateY(0) translateX(-50%); }
+  50%       { transform: translateY(8px) translateX(-50%); }
+}
+.scroll-cue { animation: bounce-y 2s ease-in-out infinite; }
+
+/* ─── Page wrapper ─── */
+.page-wrapper {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+}
+
+/* ─── Heartbeat ─── */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15%       { transform: scale(1.25); }
+  30%       { transform: scale(1); }
+  45%       { transform: scale(1.15); }
+}
+.heartbeat { animation: heartbeat 2s ease-in-out infinite; }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--lav-200); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--lav-300); }
+
+/* ─── Selection ─── */
+::selection {
+  background: rgba(131, 104, 204, 0.18);
+  color: var(--text-primary);
+}
