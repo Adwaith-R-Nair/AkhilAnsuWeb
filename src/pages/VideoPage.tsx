@@ -6,6 +6,7 @@ import { PageLayout } from '../components/layout/PageLayout'
 import { PageTransition } from '../components/transitions/PageTransition'
 import { VideoPlayer } from '../components/ui/VideoPlayer'
 import { AKHIL_YOUTUBE_ID } from '../config/content'
+import { YouTubeEmbed } from '../components/ui/YouTubeEmbed'
 
 export function VideoPage() {
   const { setCurrentPage } = useAppStore()
@@ -55,47 +56,11 @@ export function VideoPage() {
             transition={{ delay: 0.3, duration: 0.8 }}
             style={{ width: '100%', maxWidth: '840px' }}
           >
-            {AKHIL_YOUTUBE_ID === 'YOUR_VIDEO_ID_HERE' ? (
-              /* Placeholder shown until YouTube ID is set */
-              <div
-                style={{
-                  width: '100%',
-                  aspectRatio: '16/9',
-                  borderRadius: '20px',
-                  background: 'linear-gradient(135deg, var(--lav-100), var(--blush-100))',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.75rem',
-                  boxShadow: '0 16px 48px rgba(139,111,212,0.12)',
-                }}
-              >
-                <span style={{ fontSize: '2rem', opacity: 0.3 }}>▶</span>
-                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.6rem', letterSpacing: '0.2em', color: 'var(--text-faint)', textTransform: 'uppercase' }}>
-                  akhil's message · coming soon
-                </span>
-              </div>
-            ) : (
-              <div
-                style={{
-                  width: '100%',
-                  aspectRatio: '16/9',
-                  borderRadius: '20px',
-                  overflow: 'hidden',
-                  boxShadow: '0 16px 48px rgba(139,111,212,0.14), 0 4px 16px rgba(0,0,0,0.08)',
-                }}
-              >
-                <iframe
-                  src={`https://www.youtube.com/embed/${AKHIL_YOUTUBE_ID}?rel=0&modestbranding=1&color=white`}
-                  title="A message from Akhil"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  onLoad={() => setTimeout(() => setShowContinue(true), 3000)}
-                  style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-                />
-              </div>
-            )}
+            <YouTubeEmbed
+              videoId={AKHIL_YOUTUBE_ID}
+              title="A message from Akhil"
+              onEnded={() => setShowContinue(true)}
+            />
           </motion.div>
 
           {/* ── Blue reel — special featured placement ── */}

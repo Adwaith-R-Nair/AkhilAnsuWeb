@@ -384,7 +384,7 @@ export function EasterPage() {
                         marginBottom: '2rem',
                       }}
                     >
-                      {playedCount} / {AUDIO_NOTES.length} played
+                      some audio notes I cherish a lot 🤍
                     </motion.p>
                   )}
                 </AnimatePresence>

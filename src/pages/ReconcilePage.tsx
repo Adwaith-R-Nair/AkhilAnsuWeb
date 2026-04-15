@@ -5,6 +5,7 @@ import { useAppStore } from '../store/useAppStore'
 import { PageLayout } from '../components/layout/PageLayout'
 import { PageTransition } from '../components/transitions/PageTransition'
 import { RECONCILE_YOUTUBE_ID } from '../config/content'
+import { YouTubeEmbed } from '../components/ui/YouTubeEmbed'
 
 const PARAGRAPHS = [
   '"If trust can somehow find its way back, then maybe there is still something worth holding onto — and I would meet that chance with everything I\'ve learned."',
@@ -149,31 +150,10 @@ export function ReconcilePage() {
               }}
             />
 
-            {RECONCILE_YOUTUBE_ID === 'YOUR_VIDEO_ID_HERE' ? (
-              <div
-                style={{
-                  width: '100%', aspectRatio: '16/9', borderRadius: '20px',
-                  background: 'linear-gradient(135deg, var(--lav-100), var(--blush-100))',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
-                  boxShadow: '0 16px 48px rgba(139,111,212,0.12)',
-                }}
-              >
-                <span style={{ fontSize: '2rem', opacity: 0.3 }}>▶</span>
-                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.6rem', letterSpacing: '0.2em', color: 'var(--text-faint)', textTransform: 'uppercase' }}>
-                  akhil's message · coming soon
-                </span>
-              </div>
-            ) : (
-              <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 16px 48px rgba(139,111,212,0.14)' }}>
-                <iframe
-                  src={`https://www.youtube.com/embed/${RECONCILE_YOUTUBE_ID}?rel=0&modestbranding=1&color=white`}
-                  title="A message from Akhil"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-                />
-              </div>
-            )}
+            <YouTubeEmbed
+              videoId={RECONCILE_YOUTUBE_ID}
+              title="A message from Akhil"
+            />
           </motion.div>
 
           {/* Continue */}

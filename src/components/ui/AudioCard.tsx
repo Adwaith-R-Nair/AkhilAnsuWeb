@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { duckAudioForVideo, restoreAudioAfterVideo } from '../../hooks/useAudioManager'
 
 interface AudioCardProps {
   src: string
@@ -18,8 +19,15 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
   const togglePlay = () => {
     const a = audioRef.current
     if (!a) return
-    if (a.paused) { a.play(); setPlaying(true) }
-    else { a.pause(); setPlaying(false) }
+    if (a.paused) {
+      a.play()
+      setPlaying(true)
+      duckAudioForVideo()
+    } else {
+      a.pause()
+      setPlaying(false)
+      restoreAudioAfterVideo()
+    }
   }
 
   const handleTimeUpdate = () => {
@@ -29,6 +37,7 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
 
   const handleEnded = () => {
     setPlaying(false)
+    restoreAudioAfterVideo()
     if (!played) { setPlayed(true); onPlayed() }
   }
 
