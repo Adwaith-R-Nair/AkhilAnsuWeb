@@ -13,6 +13,44 @@ gsap.registerPlugin(ScrollTrigger)
 // Predefined rotations — alternating left / right, varying amounts
 const ROTATIONS = [-2.1, 3.0, -1.6, 2.7, 1.9, -2.5, 2.2, -1.4]
 
+const HUG_COUNT = 20
+
+// ─── Single hug emoji — entrance pop then continuous float-pulse ──────────────
+function HugEmoji({ index }: { index: number }) {
+  const pulseDuration = 1.5 + (index % 5) * 0.22
+  const pulseDelay    = (index * 0.19) % 2.4
+
+  return (
+    // Outer: staggered spring entrance via whileInView
+    <motion.span
+      initial={{ opacity: 0, scale: 0, rotate: -25 }}
+      whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+      viewport={{ once: true, margin: '-30px' }}
+      transition={{ delay: index * 0.055, type: 'spring', stiffness: 260, damping: 13 }}
+      style={{ display: 'inline-block' }}
+    >
+      {/* Inner: ongoing float + pulse, independent of entrance */}
+      <motion.span
+        animate={{ scale: [1, 1.18, 1], y: [0, -5, 0] }}
+        transition={{
+          duration: pulseDuration,
+          repeat: Infinity,
+          delay: pulseDelay,
+          ease: 'easeInOut',
+        }}
+        whileHover={{
+          scale: 1.5,
+          rotate: [0, -18, 18, -10, 0],
+          transition: { duration: 0.4, ease: 'easeOut' },
+        }}
+        style={{ display: 'inline-block', fontSize: '2.2rem', cursor: 'default', lineHeight: 1.4 }}
+      >
+        🫂
+      </motion.span>
+    </motion.span>
+  )
+}
+
 // ─── Letter content ───────────────────────────────────────────────────────────
 const LETTER_PARAS: Array<{ type: 'body' | 'accent' | 'large'; text: string }> = [
   { type: 'body',   text: "If you're here by now — this is the part that feels the most like me." },
@@ -615,6 +653,81 @@ export function MemoriesOfYouPage() {
             >
               💜
             </motion.span>
+          </motion.div>
+
+          {/* ── Virtual hugs ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              textAlign: 'center',
+              marginTop: '4rem',
+              padding: 'clamp(2rem, 5vw, 3rem)',
+              background: 'rgba(237,229,255,0.38)',
+              border: '1px solid rgba(196,176,240,0.28)',
+              borderRadius: '28px',
+              boxShadow:
+                '0 8px 40px rgba(139,111,212,0.08),' +
+                'inset 0 1px 0 rgba(255,255,255,0.7)',
+            }}
+          >
+            {/* Message */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              style={{ marginBottom: '2rem' }}
+            >
+              <p className="eyebrow" style={{ marginBottom: '0.9rem' }}>from ichu, with everything he has</p>
+              <p
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontStyle: 'italic',
+                  fontSize: 'clamp(1rem, 2vw, 1.15rem)',
+                  lineHeight: 2,
+                  color: 'var(--text-body)',
+                  maxWidth: '460px',
+                  margin: '0 auto',
+                }}
+              >
+                Since you're not here right now — and I genuinely wish you were — I can't give you a real one. So here. Take all of these instead. Every single hug is real, even if my arms can't reach you.
+              </p>
+            </motion.div>
+
+            {/* Hug emojis */}
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '0.4rem 0.6rem',
+                justifyContent: 'center',
+                maxWidth: '420px',
+                margin: '0 auto 2rem',
+              }}
+            >
+              {Array.from({ length: HUG_COUNT }).map((_, i) => (
+                <HugEmoji key={i} index={i} />
+              ))}
+            </div>
+
+            {/* Signature */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.9, duration: 0.8 }}
+              style={{
+                fontFamily: 'var(--font-script)',
+                fontSize: '1.4rem',
+                color: 'var(--blush-500)',
+                margin: 0,
+              }}
+            >
+              — Ichu 🍀
+            </motion.p>
           </motion.div>
 
         </div>
