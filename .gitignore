@@ -37,7 +37,7 @@ Thumbs.db
 # Vercel
 .vercel
 
-# Large media — deployed via Vercel CLI directly, not tracked in git
-public/assets/videos/
-public/assets/audio/
-public/assets/ai-videos/
+# YouTube-hosted videos — not needed in repo
+public/assets/videos/akhil-message.mp4
+public/assets/videos/reconcile-message.mp4
+public/assets/videos/closure-message.mp4
