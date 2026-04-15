@@ -13,13 +13,14 @@ gsap.registerPlugin(ScrollTrigger)
 interface MemoryCardProps {
   period: string
   title: string
+  description: string
   caption: string
   index: number
   isLeft: boolean
   onPhotoClick: (src: string, alt: string) => void
 }
 
-function MemoryCard({ period, title, caption, index, isLeft, onPhotoClick }: MemoryCardProps) {
+function MemoryCard({ period, title, description, caption, index, isLeft, onPhotoClick }: MemoryCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const dotRef = useRef<HTMLDivElement>(null)
   const [imgError, setImgError] = useState(false)
@@ -116,10 +117,12 @@ function MemoryCard({ period, title, caption, index, isLeft, onPhotoClick }: Mem
             <CardInner
               period={period}
               title={title}
+              description={description}
               imgSrc={imgSrc}
               imgError={imgError}
               setImgError={setImgError}
               onPhotoClick={onPhotoClick}
+              index={index}
             />
           </div>
         )}
@@ -170,10 +173,12 @@ function MemoryCard({ period, title, caption, index, isLeft, onPhotoClick }: Mem
             <CardInner
               period={period}
               title={title}
+              description={description}
               imgSrc={imgSrc}
               imgError={imgError}
               setImgError={setImgError}
               onPhotoClick={onPhotoClick}
+              index={index}
             />
           </div>
         )}
@@ -185,24 +190,28 @@ function MemoryCard({ period, title, caption, index, isLeft, onPhotoClick }: Mem
 function CardInner({
   period,
   title,
+  description,
   imgSrc,
   imgError,
   setImgError,
   onPhotoClick,
+  index,
 }: {
   period: string
   title: string
+  description: string
   imgSrc: string
   imgError: boolean
   setImgError: (v: boolean) => void
   onPhotoClick: (src: string, alt: string) => void
+  index: number
 }) {
   return (
     <>
       {/* Photo */}
       <div
         style={{
-          aspectRatio: '4/3',
+          aspectRatio: [5, 6, 8].includes(index) ? '4/3' : '3/4',
           background: 'linear-gradient(135deg, var(--lav-100), var(--blush-100))',
           cursor: imgError ? 'default' : 'pointer',
           position: 'relative',
@@ -272,10 +281,24 @@ function CardInner({
             fontStyle: 'italic',
             fontSize: '1.3rem',
             color: 'var(--text-primary)',
+            marginBottom: description ? '0.6rem' : 0,
           }}
         >
           {title}
         </h3>
+        {description && (
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '0.92rem',
+              color: 'var(--text-muted)',
+              lineHeight: 1.75,
+              fontStyle: 'italic',
+            }}
+          >
+            {description}
+          </p>
+        )}
       </div>
     </>
   )
@@ -332,6 +355,7 @@ export function MemoriesPage() {
               key={i}
               period={memory.period}
               title={memory.title}
+              description={memory.description}
               caption={memory.caption}
               index={i}
               isLeft={i % 2 === 0}

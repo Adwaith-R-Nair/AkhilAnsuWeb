@@ -109,14 +109,66 @@ export const LOVE_REASONS = [
 ]
 
 export const MEMORIES = [
-  { period: 'The Beginning', title: 'When We First Met', caption: 'photo-01.jpg' },
-  { period: 'Early Days', title: 'The Silly Outings', caption: 'photo-02.jpg' },
-  { period: 'Growing Together', title: 'Stolen Smiles', caption: 'photo-03.jpg' },
-  { period: 'The Quiet Moments', title: 'Just Existing Together', caption: 'photo-04.jpg' },
-  { period: 'Adventures', title: 'Somewhere We Loved', caption: 'photo-05.jpg' },
-  { period: 'The Hard Parts', title: 'We Stayed Anyway', caption: 'photo-06.jpg' },
-  { period: 'Little Things', title: 'Shared Food & Laughter', caption: 'photo-07.jpg' },
-  { period: 'One Year', title: 'Everything It Held', caption: 'photo-08.jpg' },
+  {
+    period: 'Always Special',
+    title: 'First Beautiful Mirror Selfie ❤️',
+    description: 'Some things just are.',
+    caption: 'photo-01.jpeg',
+  },
+  {
+    period: 'Early Days',
+    title: 'That Day at the Metro',
+    description: "First time you ever saw Biscoff — you even took a video of it. We never planned to go to Lulu that day, but we did. Loved every second of shopping with you. 🥹",
+    caption: 'photo-02.jpeg',
+  },
+  {
+    period: 'Food & Firsts',
+    title: 'Mandhi at Soofi 🍖',
+    description: "After so much convincing, we finally went. You weren't big on creamy things — but I got you to try carbonated Pepsi for the very first time. And the metro station after. You know the one. 😌",
+    caption: 'photo-03.jpeg',
+  },
+  {
+    period: 'Where It Began',
+    title: 'Everyone Gets a Gift From Santa — But You Were Mine',
+    description: "We needed an achayan and achayathi. That's the moment the name Ichu was born. 😌",
+    caption: 'photo-04.jpeg',
+  },
+  {
+    period: 'Celebrating You',
+    title: 'Birthday Surprise — Candid 🤍',
+    description: "You came with a whole bunch of people, we went out for food, and Athul quietly captured this on the way back.",
+    caption: 'photo-05.jpeg',
+  },
+  {
+    period: 'Campus Memories',
+    title: 'The Webinar Day — Our Beautiful Moment 💜',
+    description: "We were there for a webinar but spent every break just wandering the campus together. Your best friend got bored. We were running late. None of it mattered — walking with you made it all worth it. 🥹",
+    caption: 'photo-06.jpeg',
+  },
+  {
+    period: 'That Ride',
+    title: 'No Caption Needed — The Beautiful Bus Ride 😌',
+    description: "A long, straight ride. You weren't feeling your best that day, but you came anyway — just for me. A church programme, sitting right beside each other, the photoframe gift in my hand. You had a little pimple on your forehead. I still remember every detail.",
+    caption: 'photo-07.jpeg',
+  },
+  {
+    period: 'Little Firsts',
+    title: 'That Predicted Surprise — Loaded Fries 🍟',
+    description: "Trying it for the very first time.",
+    caption: 'photo-08.jpeg',
+  },
+  {
+    period: 'Unforgettable',
+    title: 'That Final Win 🥇🥹',
+    description: "You dressed up beautifully even when things were hard at home — wearing the gift I'd bought. I still can't forget that day.",
+    caption: 'photo-09.jpeg',
+  },
+  {
+    period: 'Not Goodbye',
+    title: 'Farewell Day — For Now 🤩',
+    description: "The last photo together. But hopefully just the last one of this chapter. 🤩",
+    caption: 'photo-10.jpeg',
+  },
 ]
 
 export const AUDIO_MAP: Record<string, string | null> = {

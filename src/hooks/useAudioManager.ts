@@ -1,40 +1,25 @@
 import { useEffect } from 'react'
-import { Howl } from 'howler'
+import { Howl, Howler } from 'howler'
 import { useAppStore } from '../store/useAppStore'
 import { AUDIO_MAP } from '../config/content'
 import type { PageId } from '../store/useAppStore'
 
 const CROSSFADE_MS = 2000
-const DUCK_MS      = 350
+const DUCK_MS      = 400
 const RESTORE_MS   = 900
 
-// ─── Module-level singletons ────────────────────────────────────────────────
-let _activeHowl: Howl | null = null
-let _targetVolume             = 0.6
-let _isDucked                 = false
-let _currentSrc               = ''
+// Howler handles autoplay unlock automatically via Web Audio API (autoUnlock: true by default).
+// We just call play() — if blocked, Howler queues it and fires when the browser allows.
+Howler.autoUnlock = true
+Howler.autoSuspend = false  // keep audio context alive between pages
 
-// Autoplay unlock: browsers block audio until first user gesture.
-// We queue a play call and fire it on the first interaction.
-let _pendingPlay: (() => void) | null = null
-let _unlocked                          = false
+// ─── Module-level singletons ─────────────────────────────────────────────────
+let _activeHowl:  Howl   | null = null
+let _targetVolume               = 0.6
+let _isDucked                   = false
+let _currentSrc                 = ''
 
-function _onFirstInteraction() {
-  if (_unlocked) return
-  _unlocked = true
-  window.removeEventListener('click',      _onFirstInteraction, true)
-  window.removeEventListener('touchstart', _onFirstInteraction, true)
-  window.removeEventListener('keydown',    _onFirstInteraction, true)
-  _pendingPlay?.()
-  _pendingPlay = null
-}
-
-// Register once at module load — captures ANY click anywhere on the page
-window.addEventListener('click',      _onFirstInteraction, true)
-window.addEventListener('touchstart', _onFirstInteraction, true)
-window.addEventListener('keydown',    _onFirstInteraction, true)
-
-// ─── Duck / Restore (called by VideoPlayer) ──────────────────────────────────
+// ─── Duck / Restore (called by VideoPlayer & FuturePage) ─────────────────────
 export function duckAudioForVideo() {
   if (!_activeHowl || _isDucked) return
   _isDucked = true
@@ -47,47 +32,32 @@ export function restoreAudioAfterVideo() {
   _activeHowl.fade(_activeHowl.volume(), _targetVolume, RESTORE_MS)
 }
 
-// ─── Format hint: .mpeg is usually MP3-encoded ───────────────────────────────
-function formatHint(path: string): string[] {
-  const ext = path.split('.').pop()?.toLowerCase() ?? ''
-  if (ext === 'mpeg' || ext === 'mpg') return ['mp3']
-  return [ext]
-}
-
-// ─── The hook ────────────────────────────────────────────────────────────────
+// ─── The hook (called from PageLayout on every page) ─────────────────────────
 export function useAudioManager(page: PageId) {
   const { audioEnabled, isMuted, volume, setCurrentTrack } = useAppStore()
 
   useEffect(() => {
     const trackPath = AUDIO_MAP[page]
 
-    // Disabled or no track for this page → stop music
+    // No track for this page, or audio disabled — stop music
     if (!audioEnabled || !trackPath) {
       if (_activeHowl) {
         const h = _activeHowl
         h.fade(h.volume(), 0, CROSSFADE_MS)
         setTimeout(() => h.stop(), CROSSFADE_MS)
-        _activeHowl  = null
-        _currentSrc  = ''
-        _isDucked    = false
+        _activeHowl = null
+        _currentSrc = ''
+        _isDucked   = false
         setCurrentTrack(null)
       }
       return
     }
 
-    // Same track already playing — don't restart
+    // Same track already playing — don't restart, just continue
     if (_currentSrc === trackPath && _activeHowl) return
 
     const fadeTarget  = isMuted ? 0 : volume
     _targetVolume     = fadeTarget
-
-    const newHowl = new Howl({
-      src:    [trackPath],
-      format: formatHint(trackPath),
-      loop:   true,
-      volume: 0,
-      html5:  true,
-    })
 
     // Crossfade out old track
     if (_activeHowl) {
@@ -96,29 +66,39 @@ export function useAudioManager(page: PageId) {
       setTimeout(() => old.stop(), CROSSFADE_MS)
     }
 
+    // Create new Howl — Web Audio API (no html5:true) so Howler's autoUnlock works
+    const newHowl = new Howl({
+      src:    [trackPath],
+      format: ['mp3'],
+      loop:   true,
+      volume: 0,
+      onplayerror: (_id, err) => {
+        console.warn('[audio] play blocked:', err)
+        // Howler will retry automatically once the context unlocks
+        newHowl.once('unlock', () => {
+          newHowl.play()
+          newHowl.fade(0, _targetVolume, CROSSFADE_MS)
+        })
+      },
+      onplay: () => {
+        newHowl.fade(0, fadeTarget, CROSSFADE_MS)
+      },
+    })
+
     _activeHowl = newHowl
     _currentSrc = trackPath
     _isDucked   = false
     setCurrentTrack(trackPath)
 
-    const startPlaying = () => {
-      newHowl.play()
-      newHowl.fade(0, fadeTarget, CROSSFADE_MS)
-    }
+    // Howler queues this automatically if context is still locked
+    newHowl.play()
 
-    if (_unlocked) {
-      // Browser already unlocked by a prior interaction — play immediately
-      startPlaying()
-    } else {
-      // Queue for first interaction (autoplay policy)
-      _pendingPlay = startPlaying
-    }
   }, [page, audioEnabled]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // React to volume / mute changes
+  // React to volume / mute changes in real time
   useEffect(() => {
     if (!_activeHowl || _isDucked) return
-    const v   = isMuted ? 0 : volume
+    const v = isMuted ? 0 : volume
     _targetVolume = v
     _activeHowl.volume(v)
   }, [isMuted, volume])
