@@ -17,7 +17,6 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
   const [progress, setProgress] = useState(0)
   const [played, setPlayed] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('loading')
-  const [errorDetail, setErrorDetail] = useState('')
 
   // Prefetch the audio as a blob on mount so play() is always synchronous
   useEffect(() => {
@@ -25,10 +24,6 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
     fetch(src)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status} — file not found on server`)
-        const ct = res.headers.get('content-type') || 'unknown'
-        if (!ct.includes('audio') && !ct.includes('octet')) {
-          throw new Error(`Wrong content-type: ${ct} (server returned HTML instead of audio)`)
-        }
         return res.blob()
       })
       .then(blob => {
@@ -51,7 +46,6 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
         if (cancelled) return
         const msg = err instanceof Error ? err.message : String(err)
         console.error('[AudioCard] prefetch failed:', src, msg)
-        setErrorDetail(msg)
         setStatus('error')
       })
     return () => { cancelled = true }
@@ -77,7 +71,6 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
         .catch(err => {
           const msg = err instanceof Error ? err.message : String(err)
           console.error('[AudioCard] play() rejected:', msg)
-          setErrorDetail('play() blocked: ' + msg)
           setStatus('error')
         })
     }
@@ -183,10 +176,9 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
         })}
       </div>
 
-      {/* Temporary debug — shows exact error so we can diagnose */}
       {status === 'error' && (
-        <span style={{ fontSize: '0.6rem', color: 'red', fontFamily: 'monospace', wordBreak: 'break-all' }}>
-          {errorDetail || 'unknown error'}
+        <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', fontFamily: 'var(--font-ui)' }}>
+          audio coming soon
         </span>
       )}
     </motion.div>

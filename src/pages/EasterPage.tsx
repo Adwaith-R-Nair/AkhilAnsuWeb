@@ -6,12 +6,16 @@ import { useAppStore } from '../store/useAppStore'
 import { PageLayout } from '../components/layout/PageLayout'
 import { PageTransition } from '../components/transitions/PageTransition'
 import { AudioCard } from '../components/ui/AudioCard'
+import note1 from '../assets/audio/note-1.mp3'
+import note2 from '../assets/audio/note-2.mp3'
+import note3 from '../assets/audio/note-3.mp3'
+import note4 from '../assets/audio/note-4.mp3'
 
 const AUDIO_NOTES = [
-  { src: '/assets/audio/note-1.mp3', label: 'Voice Note 01' },
-  { src: '/assets/audio/note-2.mp3', label: 'Voice Note 02' },
-  { src: '/assets/audio/note-3.mp3', label: 'Voice Note 03' },
-  { src: '/assets/audio/note-4.mp3', label: 'Voice Note 04' },
+  { src: note1, label: 'Voice Note 01' },
+  { src: note2, label: 'Voice Note 02' },
+  { src: note3, label: 'Voice Note 03' },
+  { src: note4, label: 'Voice Note 04' },
 ]
 
 // Burst sparkle particle — rendered in the container, NOT inside the orb
