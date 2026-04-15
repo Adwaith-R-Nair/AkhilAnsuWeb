@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { duckAudioForVideo, restoreAudioAfterVideo } from '../../hooks/useAudioManager'
 
 interface AudioCardProps {
   src: string
@@ -37,6 +38,7 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
           setPlaying(false)
           setProgress(1)
           if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+          restoreAudioAfterVideo()
           setPlayed(prev => { if (!prev) onPlayed(); return true })
         })
         audioRef.current = a
@@ -60,8 +62,10 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
       a.pause()
       setPlaying(false)
       if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+      restoreAudioAfterVideo()
     } else {
       window.dispatchEvent(new CustomEvent('audiocardpause', { detail: src }))
+      duckAudioForVideo()
       a.play()
         .then(() => {
           setPlaying(true)
@@ -84,6 +88,7 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
         audioRef.current.pause()
         setPlaying(false)
         if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+        // Don't restore here — the other card will duck immediately after
       }
     }
     window.addEventListener('audiocardpause', handler)
