@@ -289,7 +289,7 @@ export function IntroPage() {
                   textShadow: 'none',
                 }}
               >
-                Ansu &amp; Ichu's World
+                Ansu & Ichu's World
               </h1>
 
               {/* Decorative rule */}
