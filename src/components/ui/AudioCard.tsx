@@ -1,6 +1,5 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Howl } from 'howler'
 
 interface AudioCardProps {
   src: string
@@ -10,79 +9,93 @@ interface AudioCardProps {
 }
 
 export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
-  const howlRef = useRef<Howl | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const blobUrlRef = useRef<string | null>(null)
+  const rafRef = useRef<number | null>(null)
+
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const [played, setPlayed] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [hasError, setHasError] = useState(false)
-  const rafRef = useRef<number | null>(null)
 
-  // Build the Howl once on mount
-  useEffect(() => {
-    const howl = new Howl({
-      src: [src],
-      format: ['mp3'],
-      html5: true,          // stream via <audio> under the hood — avoids WebAudio decode issues
-      preload: false,       // don't load until user hits play
-      volume: 1,
-      onplay: () => {
-        setPlaying(true)
-        tick()
-      },
-      onpause: () => {
-        setPlaying(false)
-        if (rafRef.current) cancelAnimationFrame(rafRef.current)
-      },
-      onend: () => {
-        setPlaying(false)
-        setProgress(1)
-        if (rafRef.current) cancelAnimationFrame(rafRef.current)
-        if (!played) { setPlayed(true); onPlayed() }
-      },
-      onloaderror: () => setHasError(true),
-      onplayerror: () => setHasError(true),
-    })
-    howlRef.current = howl
-
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-      howl.unload()
-      howlRef.current = null
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src])
-
-  function tick() {
-    const h = howlRef.current
-    if (!h) return
-    const dur = h.duration()
-    if (dur > 0) setProgress(h.seek() / dur)
+  const tick = useCallback(() => {
+    const a = audioRef.current
+    if (!a) return
+    if (a.duration > 0) setProgress(a.currentTime / a.duration)
     rafRef.current = requestAnimationFrame(tick)
+  }, [])
+
+  const stopTick = () => {
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+  }
+
+  const pause = () => {
+    audioRef.current?.pause()
+    setPlaying(false)
+    stopTick()
+  }
+
+  const play = async () => {
+    if (loading) return
+
+    // Pause any other AudioCard that's playing
+    window.dispatchEvent(new CustomEvent('audiocardpause', { detail: src }))
+
+    try {
+      // Lazily fetch & cache the blob URL so we don't depend on the CDN
+      if (!blobUrlRef.current) {
+        setLoading(true)
+        const res = await fetch(src)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const blob = await res.blob()
+        blobUrlRef.current = URL.createObjectURL(blob)
+        setLoading(false)
+      }
+
+      // Create or reuse the audio element
+      if (!audioRef.current) {
+        const a = new Audio(blobUrlRef.current)
+        a.addEventListener('timeupdate', () => {
+          if (a.duration > 0) setProgress(a.currentTime / a.duration)
+        })
+        a.addEventListener('ended', () => {
+          setPlaying(false)
+          setProgress(1)
+          stopTick()
+          if (!played) { setPlayed(true); onPlayed() }
+        })
+        audioRef.current = a
+      } else {
+        audioRef.current.src = blobUrlRef.current
+      }
+
+      await audioRef.current.play()
+      setPlaying(true)
+      tick()
+    } catch (err) {
+      console.error('[AudioCard] failed to load/play:', src, err)
+      setLoading(false)
+      setHasError(true)
+    }
   }
 
   const togglePlay = () => {
-    const h = howlRef.current
-    if (!h || hasError) return
-    if (playing) {
-      h.pause()
-    } else {
-      // Stop any other AudioCard Howls first by broadcasting a custom event
-      window.dispatchEvent(new CustomEvent('audiocardplay', { detail: { src } }))
-      h.play()
-    }
+    if (playing) { pause() } else { play() }
   }
 
-  // Pause this card when another AudioCard starts playing
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const evt = e as CustomEvent<{ src: string }>
-      if (evt.detail.src !== src && howlRef.current?.playing()) {
-        howlRef.current.pause()
-      }
-    }
-    window.addEventListener('audiocardplay', handler)
-    return () => window.removeEventListener('audiocardplay', handler)
-  }, [src])
+  // Listen for other cards starting so we pause
+  const handlePause = useCallback((e: Event) => {
+    const evt = e as CustomEvent<string>
+    if (evt.detail !== src && playing) pause()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing, src])
+
+  // Register/unregister listener on every render (playing changes)
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('audiocardpause', handlePause as EventListener)
+    window.addEventListener('audiocardpause', handlePause as EventListener)
+  }
 
   const BAR_COUNT = 20
 
@@ -113,23 +126,23 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <button
           onClick={togglePlay}
-          disabled={hasError}
+          disabled={hasError || loading}
           style={{
             width: '40px',
             height: '40px',
             borderRadius: '50%',
             background: hasError ? 'rgba(237,229,255,0.5)' : 'var(--lav-100)',
             border: '1px solid rgba(139,111,212,0.2)',
-            cursor: hasError ? 'default' : 'pointer',
+            cursor: (hasError || loading) ? 'default' : 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '0.9rem',
+            fontSize: loading ? '0.6rem' : '0.9rem',
             color: 'var(--lav-500)',
             flexShrink: 0,
           }}
         >
-          {playing ? '⏸' : '▶'}
+          {loading ? '...' : playing ? '⏸' : '▶'}
         </button>
         <div>
           <div
