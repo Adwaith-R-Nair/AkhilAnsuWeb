@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { duckAudioForVideo, restoreAudioAfterVideo } from '../../hooks/useAudioManager'
+import { Howl } from 'howler'
 
 interface AudioCardProps {
   src: string
@@ -10,36 +10,79 @@ interface AudioCardProps {
 }
 
 export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
-  const audioRef = useRef<HTMLAudioElement>(null)
+  const howlRef = useRef<Howl | null>(null)
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const [played, setPlayed] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const rafRef = useRef<number | null>(null)
+
+  // Build the Howl once on mount
+  useEffect(() => {
+    const howl = new Howl({
+      src: [src],
+      format: ['mp3'],
+      html5: true,          // stream via <audio> under the hood — avoids WebAudio decode issues
+      preload: false,       // don't load until user hits play
+      volume: 1,
+      onplay: () => {
+        setPlaying(true)
+        tick()
+      },
+      onpause: () => {
+        setPlaying(false)
+        if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      },
+      onend: () => {
+        setPlaying(false)
+        setProgress(1)
+        if (rafRef.current) cancelAnimationFrame(rafRef.current)
+        if (!played) { setPlayed(true); onPlayed() }
+      },
+      onloaderror: () => setHasError(true),
+      onplayerror: () => setHasError(true),
+    })
+    howlRef.current = howl
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      howl.unload()
+      howlRef.current = null
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src])
+
+  function tick() {
+    const h = howlRef.current
+    if (!h) return
+    const dur = h.duration()
+    if (dur > 0) setProgress(h.seek() / dur)
+    rafRef.current = requestAnimationFrame(tick)
+  }
 
   const togglePlay = () => {
-    const a = audioRef.current
-    if (!a) return
-    if (a.paused) {
-      a.play()
-      setPlaying(true)
-      duckAudioForVideo()
+    const h = howlRef.current
+    if (!h || hasError) return
+    if (playing) {
+      h.pause()
     } else {
-      a.pause()
-      setPlaying(false)
-      restoreAudioAfterVideo()
+      // Stop any other AudioCard Howls first by broadcasting a custom event
+      window.dispatchEvent(new CustomEvent('audiocardplay', { detail: { src } }))
+      h.play()
     }
   }
 
-  const handleTimeUpdate = () => {
-    const a = audioRef.current
-    if (a && a.duration) setProgress(a.currentTime / a.duration)
-  }
-
-  const handleEnded = () => {
-    setPlaying(false)
-    restoreAudioAfterVideo()
-    if (!played) { setPlayed(true); onPlayed() }
-  }
+  // Pause this card when another AudioCard starts playing
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const evt = e as CustomEvent<{ src: string }>
+      if (evt.detail.src !== src && howlRef.current?.playing()) {
+        howlRef.current.pause()
+      }
+    }
+    window.addEventListener('audiocardplay', handler)
+    return () => window.removeEventListener('audiocardplay', handler)
+  }, [src])
 
   const BAR_COUNT = 20
 
@@ -136,15 +179,6 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
           audio coming soon
         </span>
       )}
-
-      <audio
-        ref={audioRef}
-        src={src}
-        preload="none"
-        onTimeUpdate={handleTimeUpdate}
-        onEnded={handleEnded}
-        onError={() => setHasError(true)}
-      />
     </motion.div>
   )
 }
