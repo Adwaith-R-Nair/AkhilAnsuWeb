@@ -4,7 +4,7 @@ import * as THREE from 'three'
 import { webglMouse } from '../../utils/webglMouse'
 
 // Fewer, smaller, much lighter particles — delicate sparkle on white
-const PARTICLE_COUNT = 2800
+const PARTICLE_COUNT = 3600
 const WORLD_SCALE    = 34.64   // NDC → world at z=0 (camera z=60, fov=60)
 
 const vertexShader = `
@@ -54,20 +54,19 @@ void main() {
   // Soft glow: bright centre fading to transparent edge
   float alpha = pow(1.0 - dist * 2.0, 2.2);
 
-  // Pastel palette — very light, almost white with a hint of colour
-  // On white bg these look like tiny watercolour dots
-  vec3 lavColor   = vec3(0.72, 0.65, 0.94);   // soft lavender
-  vec3 blushColor = vec3(0.94, 0.72, 0.82);   // soft rose
-  vec3 pearlColor = vec3(0.80, 0.72, 0.97);   // pale violet
+  // Richer palette — more saturated lavender, rose and violet
+  vec3 lavColor   = vec3(0.58, 0.44, 0.96);   // vivid lavender
+  vec3 blushColor = vec3(0.96, 0.55, 0.74);   // vivid rose
+  vec3 pearlColor = vec3(0.70, 0.48, 0.99);   // vivid violet
 
   vec3 color = mix(lavColor, blushColor,  smoothstep(0.0, 0.55, vTwinkle));
   color      = mix(color,    pearlColor,  smoothstep(0.65, 1.0, vTwinkle));
 
-  // Gentle twinkle
-  float twinkle = sin(uTime * 1.2 + vTwinkle * 6.28318) * 0.20 + 0.80;
+  // More pronounced twinkle
+  float twinkle = sin(uTime * 1.2 + vTwinkle * 6.28318) * 0.30 + 0.70;
 
-  // Visible but gentle — decorative sparkle, not visual noise
-  gl_FragColor = vec4(color, alpha * twinkle * 0.52);
+  // Higher opacity for visible colour
+  gl_FragColor = vec4(color, alpha * twinkle * 0.78);
 }
 `
 
@@ -108,7 +107,7 @@ export function ParticleField() {
         fragmentShader={fragmentShader}
         uniforms={{
           uTime:        { value: 0 },
-          uSize:        { value: 5.0 },        // smaller points
+          uSize:        { value: 6.5 },        // slightly larger for colour visibility
           uMouse:       { value: new THREE.Vector2(0, 0) },
           uMouseRadius: { value: 18.0 },       // narrower influence zone
         }}
