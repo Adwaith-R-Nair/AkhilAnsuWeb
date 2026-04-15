@@ -6,6 +6,7 @@ import { useAppStore } from '../store/useAppStore'
 import { PageLayout } from '../components/layout/PageLayout'
 import { PageTransition } from '../components/transitions/PageTransition'
 import { MOY_PHOTOS, MOY_FINAL_IMAGE } from '../config/content'
+import { PhotoLightbox } from '../components/ui/PhotoLightbox'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -30,7 +31,12 @@ const LETTER_PARAS: Array<{ type: 'body' | 'accent' | 'large'; text: string }> =
 ]
 
 // ─── Polaroid component ───────────────────────────────────────────────────────
-function PolaroidCard({ src, caption, index }: { src: string; caption: string; index: number }) {
+function PolaroidCard({ src, caption, index, onPhotoClick }: {
+  src: string
+  caption: string
+  index: number
+  onPhotoClick: (src: string) => void
+}) {
   const rotation = ROTATIONS[index % ROTATIONS.length]
   const [imgError, setImgError] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -65,7 +71,7 @@ function PolaroidCard({ src, caption, index }: { src: string; caption: string; i
       ref={cardRef}
       style={{
         background: '#ffffff',
-        padding: '10px 10px 52px',
+        padding: '10px 10px 88px',
         boxShadow:
           '0 10px 36px rgba(0,0,0,0.10),' +
           '0 3px 10px rgba(0,0,0,0.06),' +
@@ -73,7 +79,7 @@ function PolaroidCard({ src, caption, index }: { src: string; caption: string; i
         opacity: 0,
         position: 'relative',
         zIndex: 1,
-        cursor: 'default',
+        cursor: 'pointer',
         marginTop: index % 2 === 1 ? '2.2rem' : 0,
       }}
       onMouseEnter={(e) => {
@@ -101,8 +107,9 @@ function PolaroidCard({ src, caption, index }: { src: string; caption: string; i
         e.currentTarget.style.zIndex = '1'
       }}
     >
-      {/* Photo area */}
+      {/* Photo area — click opens lightbox */}
       <div
+        onClick={() => !imgError && onPhotoClick(`/assets/photos/${src}`)}
         style={{
           aspectRatio: '3/4',
           background: 'linear-gradient(135deg, var(--lav-100), var(--blush-100))',
@@ -153,25 +160,21 @@ function PolaroidCard({ src, caption, index }: { src: string; caption: string; i
           bottom: 0,
           left: 0,
           right: 0,
-          height: '52px',
+          height: '88px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '0 10px',
+          padding: '8px 12px',
         }}
       >
         <p
           style={{
             fontFamily: 'var(--font-script)',
-            fontSize: caption ? '0.95rem' : '0',
+            fontSize: '0.88rem',
             color: '#4a3060',
             margin: 0,
             textAlign: 'center',
-            lineHeight: 1.3,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            maxWidth: '100%',
+            lineHeight: 1.45,
           }}
         >
           {caption}
@@ -317,6 +320,7 @@ function FinalImage({ src, caption }: { src: string; caption: string }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 export function MemoriesOfYouPage() {
   const { setCurrentPage } = useAppStore()
+  const [lightbox, setLightbox] = useState<{ src: string } | null>(null)
 
   useEffect(() => {
     setCurrentPage('memories-of-you')
@@ -574,6 +578,7 @@ export function MemoriesOfYouPage() {
                 src={photo.src}
                 caption={photo.caption}
                 index={i}
+                onPhotoClick={(src) => setLightbox({ src })}
               />
             ))}
           </div>
@@ -614,6 +619,15 @@ export function MemoriesOfYouPage() {
 
         </div>
       </PageTransition>
+
+      {lightbox && (
+        <PhotoLightbox
+          src={lightbox.src}
+          alt="a memory"
+          isOpen={!!lightbox}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </PageLayout>
   )
 }
