@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 
 interface AudioCardProps {
@@ -16,45 +16,24 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const [played, setPlayed] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [hasError, setHasError] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('loading')
+  const [errorDetail, setErrorDetail] = useState('')
 
-  const tick = useCallback(() => {
-    const a = audioRef.current
-    if (!a) return
-    if (a.duration > 0) setProgress(a.currentTime / a.duration)
-    rafRef.current = requestAnimationFrame(tick)
-  }, [])
-
-  const stopTick = () => {
-    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
-  }
-
-  const pause = () => {
-    audioRef.current?.pause()
-    setPlaying(false)
-    stopTick()
-  }
-
-  const play = async () => {
-    if (loading) return
-
-    // Pause any other AudioCard that's playing
-    window.dispatchEvent(new CustomEvent('audiocardpause', { detail: src }))
-
-    try {
-      // Lazily fetch & cache the blob URL so we don't depend on the CDN
-      if (!blobUrlRef.current) {
-        setLoading(true)
-        const res = await fetch(src)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const blob = await res.blob()
+  // Prefetch the audio as a blob on mount so play() is always synchronous
+  useEffect(() => {
+    let cancelled = false
+    fetch(src)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status} — file not found on server`)
+        const ct = res.headers.get('content-type') || 'unknown'
+        if (!ct.includes('audio') && !ct.includes('octet')) {
+          throw new Error(`Wrong content-type: ${ct} (server returned HTML instead of audio)`)
+        }
+        return res.blob()
+      })
+      .then(blob => {
+        if (cancelled) return
         blobUrlRef.current = URL.createObjectURL(blob)
-        setLoading(false)
-      }
-
-      // Create or reuse the audio element
-      if (!audioRef.current) {
         const a = new Audio(blobUrlRef.current)
         a.addEventListener('timeupdate', () => {
           if (a.duration > 0) setProgress(a.currentTime / a.duration)
@@ -62,40 +41,61 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
         a.addEventListener('ended', () => {
           setPlaying(false)
           setProgress(1)
-          stopTick()
-          if (!played) { setPlayed(true); onPlayed() }
+          if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+          setPlayed(prev => { if (!prev) onPlayed(); return true })
         })
         audioRef.current = a
-      } else {
-        audioRef.current.src = blobUrlRef.current
-      }
+        setStatus('ready')
+      })
+      .catch(err => {
+        if (cancelled) return
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('[AudioCard] prefetch failed:', src, msg)
+        setErrorDetail(msg)
+        setStatus('error')
+      })
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src])
 
-      await audioRef.current.play()
-      setPlaying(true)
-      tick()
-    } catch (err) {
-      console.error('[AudioCard] failed to load/play:', src, err)
-      setLoading(false)
-      setHasError(true)
+  const togglePlay = () => {
+    const a = audioRef.current
+    if (!a || status !== 'ready') return
+
+    if (playing) {
+      a.pause()
+      setPlaying(false)
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+    } else {
+      window.dispatchEvent(new CustomEvent('audiocardpause', { detail: src }))
+      a.play()
+        .then(() => {
+          setPlaying(true)
+          const tick = () => { rafRef.current = requestAnimationFrame(tick) }
+          tick()
+        })
+        .catch(err => {
+          const msg = err instanceof Error ? err.message : String(err)
+          console.error('[AudioCard] play() rejected:', msg)
+          setErrorDetail('play() blocked: ' + msg)
+          setStatus('error')
+        })
     }
   }
 
-  const togglePlay = () => {
-    if (playing) { pause() } else { play() }
-  }
-
-  // Listen for other cards starting so we pause
-  const handlePause = useCallback((e: Event) => {
-    const evt = e as CustomEvent<string>
-    if (evt.detail !== src && playing) pause()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, src])
-
-  // Register/unregister listener on every render (playing changes)
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('audiocardpause', handlePause as EventListener)
-    window.addEventListener('audiocardpause', handlePause as EventListener)
-  }
+  // Stop this card when another starts
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const evt = e as CustomEvent<string>
+      if (evt.detail !== src && audioRef.current && !audioRef.current.paused) {
+        audioRef.current.pause()
+        setPlaying(false)
+        if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null }
+      }
+    }
+    window.addEventListener('audiocardpause', handler)
+    return () => window.removeEventListener('audiocardpause', handler)
+  }, [src])
 
   const BAR_COUNT = 20
 
@@ -122,38 +122,35 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
         gap: '1rem',
       }}
     >
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <button
           onClick={togglePlay}
-          disabled={hasError || loading}
+          disabled={status !== 'ready'}
           style={{
             width: '40px',
             height: '40px',
             borderRadius: '50%',
-            background: hasError ? 'rgba(237,229,255,0.5)' : 'var(--lav-100)',
+            background: status === 'error' ? 'rgba(237,229,255,0.5)' : 'var(--lav-100)',
             border: '1px solid rgba(139,111,212,0.2)',
-            cursor: (hasError || loading) ? 'default' : 'pointer',
+            cursor: status === 'ready' ? 'pointer' : 'default',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: loading ? '0.6rem' : '0.9rem',
+            fontSize: status === 'loading' ? '0.55rem' : '0.9rem',
             color: 'var(--lav-500)',
             flexShrink: 0,
           }}
         >
-          {loading ? '...' : playing ? '⏸' : '▶'}
+          {status === 'loading' ? '...' : status === 'error' ? '✕' : playing ? '⏸' : '▶'}
         </button>
         <div>
-          <div
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: '0.6rem',
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              color: 'var(--text-faint)',
-            }}
-          >
+          <div style={{
+            fontFamily: 'var(--font-ui)',
+            fontSize: '0.6rem',
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: 'var(--text-faint)',
+          }}>
             {label}
           </div>
           {played && (
@@ -164,7 +161,6 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
         </div>
       </div>
 
-      {/* Waveform-style progress */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '2px', height: '24px' }}>
         {Array.from({ length: BAR_COUNT }).map((_, i) => {
           const ratio = i / BAR_COUNT
@@ -187,9 +183,10 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
         })}
       </div>
 
-      {hasError && (
-        <span style={{ fontSize: '0.65rem', color: 'var(--text-faint)', fontFamily: 'var(--font-ui)' }}>
-          audio coming soon
+      {/* Temporary debug — shows exact error so we can diagnose */}
+      {status === 'error' && (
+        <span style={{ fontSize: '0.6rem', color: 'red', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+          {errorDetail || 'unknown error'}
         </span>
       )}
     </motion.div>
