@@ -429,17 +429,17 @@ export function EasterPage() {
                   )}
                 </AnimatePresence>
 
-                {/* Continue */}
+                {/* Continue to final page */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2 }}
-                  style={{ textAlign: 'center' }}
+                  transition={{ delay: 1.4 }}
+                  style={{ textAlign: 'center', marginTop: '1rem', paddingBottom: '2rem' }}
                 >
                   <motion.button
                     whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(139,111,212,0.2)' }}
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => navigate('/creator')}
+                    onClick={() => navigate('/memories-of-you')}
                     style={{
                       background: 'transparent',
                       border: '1px solid rgba(139,111,212,0.3)',
@@ -453,7 +453,7 @@ export function EasterPage() {
                       cursor: 'pointer',
                     }}
                   >
-                    One last thing →
+                    one last letter →
                   </motion.button>
                 </motion.div>
               </motion.div>

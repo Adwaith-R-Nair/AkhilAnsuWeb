@@ -16,8 +16,9 @@ const ChoicePage    = lazy(() => import('./pages/ChoicePage').then(m => ({ defau
 const ReconcilePage = lazy(() => import('./pages/ReconcilePage').then(m => ({ default: m.ReconcilePage })))
 const ClosurePage   = lazy(() => import('./pages/ClosurePage').then(m => ({ default: m.ClosurePage })))
 const FuturePage    = lazy(() => import('./pages/FuturePage').then(m => ({ default: m.FuturePage })))
-const EasterPage    = lazy(() => import('./pages/EasterPage').then(m => ({ default: m.EasterPage })))
-const CreatorPage   = lazy(() => import('./pages/CreatorPage').then(m => ({ default: m.CreatorPage })))
+const EasterPage        = lazy(() => import('./pages/EasterPage').then(m => ({ default: m.EasterPage })))
+const CreatorPage       = lazy(() => import('./pages/CreatorPage').then(m => ({ default: m.CreatorPage })))
+const MemoriesOfYouPage = lazy(() => import('./pages/MemoriesOfYouPage').then(m => ({ default: m.MemoriesOfYouPage })))
 
 function PageFallback() {
   return (
@@ -58,8 +59,9 @@ function AppRoutes() {
           <Route path="/reconcile"  element={<ReconcilePage />} />
           <Route path="/closure"    element={<ClosurePage />} />
           <Route path="/future"     element={<FuturePage />} />
-          <Route path="/easter"     element={<EasterPage />} />
-          <Route path="/creator"    element={<CreatorPage />} />
+          <Route path="/easter"          element={<EasterPage />} />
+          <Route path="/creator"         element={<CreatorPage />} />
+          <Route path="/memories-of-you" element={<MemoriesOfYouPage />} />
         </Routes>
       </Suspense>
     </AnimatePresence>

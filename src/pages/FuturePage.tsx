@@ -293,7 +293,7 @@ export function FuturePage() {
             <motion.button
               whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(139,111,212,0.2)' }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => navigate('/easter')}
+              onClick={() => navigate('/creator')}
               style={{
                 background: 'transparent',
                 border: '1px solid rgba(139,111,212,0.3)',

@@ -182,8 +182,9 @@ export const AUDIO_MAP: Record<string, string | null> = {
   reconcile: '/assets/music/main.mp3',
   closure:   '/assets/music/main.mp3',
   future:    '/assets/music/main.mp3',
-  easter:    '/assets/music/main.mp3',
-  creator:   '/assets/music/main.mp3',
+  easter:          '/assets/music/main.mp3',
+  creator:         '/assets/music/main.mp3',
+  'memories-of-you': '/assets/music/main.mp3',
 }
 
 export const PAGE_ORDER = [
@@ -196,8 +197,9 @@ export const PAGE_ORDER = [
   'choice',
   // reconcile or closure come next based on userChoice
   'future',
-  'easter',
   'creator',
+  'easter',
+  'memories-of-you',
 ] as const
 
 export const PAGE_LABELS: Record<string, string> = {
@@ -212,5 +214,24 @@ export const PAGE_LABELS: Record<string, string> = {
   closure: 'A Gentle Goodbye',
   future: 'What Could\'ve Been',
   easter: 'One More Thing',
-  creator: 'From Adwaith',
+  creator:           'From Adwaith',
+  'memories-of-you': 'Memories of You',
+}
+
+// Photos for the Memories of You page
+export const MOY_PHOTOS: Array<{ src: string; caption: string }> = [
+  { src: 'moy-01.jpeg', caption: 'The very first thing I ever gave you. Before I knew how much you\'d matter.' },
+  { src: 'moy-02.jpeg', caption: 'Your birthday message. I\'ve read it more times than I\'ll ever admit.' },
+  { src: 'moy-03.jpeg', caption: 'The matching tattoo you wanted for us. I still think it would\'ve looked perfect.' },
+  { src: 'moy-04.jpeg', caption: 'Your first letter — given to me at Kadamakuddy. The phone case too. I still have both.' },
+  { src: 'moy-05.jpeg', caption: 'That photobooth day. You loved it so much you showed everyone. And yes — I kept that tissue paper.' },
+  { src: 'moy-06.jpeg', caption: 'The watch you gave me. Every time I glance at it, I think about time — and about you.' },
+  { src: 'moy-07.jpeg', caption: 'The letter you put so much heart into. The memory jar never reached me — but I never forgot it.' },
+  { src: 'moy-08.jpeg', caption: 'The smallest reminder that I was on your mind. Those always meant the most.' },
+]
+
+// The final standalone image — update src and caption as needed
+export const MOY_FINAL_IMAGE = {
+  src: 'moy-final.jpeg',
+  caption: 'still holding on. always.',
 }

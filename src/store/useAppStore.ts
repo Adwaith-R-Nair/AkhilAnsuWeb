@@ -13,6 +13,7 @@ export type PageId =
   | 'future'
   | 'easter'
   | 'creator'
+  | 'memories-of-you'
 
 interface AppState {
   // Loader

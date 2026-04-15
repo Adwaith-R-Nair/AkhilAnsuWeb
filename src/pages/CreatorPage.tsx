@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../store/useAppStore'
 import { PageLayout } from '../components/layout/PageLayout'
@@ -64,8 +65,10 @@ const DEV_SIG = '// built with care, adwaith'
 
 export function CreatorPage() {
   const { setCurrentPage } = useAppStore()
+  const navigate = useNavigate()
   const [visibleCount, setVisibleCount] = useState(0)
   const [showHeart, setShowHeart] = useState(false)
+  const [showSurprise, setShowSurprise] = useState(false)
   const [devSig, setDevSig] = useState('')
   const [sigDone, setSigDone] = useState(false)
 
@@ -89,6 +92,7 @@ export function CreatorPage() {
             clearInterval(sigInterval)
             setSigDone(true)
             setTimeout(() => setShowHeart(true), 500)
+            setTimeout(() => setShowSurprise(true), 3200)
           }
         }, 52)
       }
@@ -373,6 +377,50 @@ export function CreatorPage() {
                     this page will always be here. whenever you need to come back to it.
                   </motion.p>
                 </>
+              )}
+            </AnimatePresence>
+
+            {/* Surprise — one more thing */}
+            <AnimatePresence>
+              {showSurprise && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ textAlign: 'center', marginTop: '3rem' }}
+                >
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      fontStyle: 'italic',
+                      fontSize: '0.85rem',
+                      color: 'var(--text-faint)',
+                      marginBottom: '1.2rem',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    actually... he left you one more thing.
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05, boxShadow: '0 8px 32px rgba(139,111,212,0.22)' }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate('/easter')}
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid rgba(139,111,212,0.28)',
+                      borderRadius: '60px',
+                      padding: '0.7rem 2.2rem',
+                      fontFamily: 'var(--font-ui)',
+                      fontSize: '0.7rem',
+                      letterSpacing: '0.2em',
+                      textTransform: 'uppercase',
+                      color: 'var(--lav-500)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    open it ✦
+                  </motion.button>
+                </motion.div>
               )}
             </AnimatePresence>
 

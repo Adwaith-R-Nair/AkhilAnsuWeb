@@ -11,7 +11,7 @@ import { useAudioManager } from '../../hooks/useAudioManager'
 const NO_NAV_PAGES = ['/video', '/choice']
 
 const LINEAR_FLOW = ['/', '/apology', '/love', '/memories', '/letter', '/video', '/choice']
-const FULL_FLOW = ['/', '/apology', '/love', '/memories', '/letter', '/video', '/choice', '/future', '/easter', '/creator']
+const FULL_FLOW = ['/', '/apology', '/love', '/memories', '/letter', '/video', '/choice', '/future', '/creator', '/easter', '/memories-of-you']
 
 function getPrevPath(pathname: string): string | null {
   const idx = LINEAR_FLOW.indexOf(pathname)
@@ -22,9 +22,10 @@ function getPrevPath(pathname: string): string | null {
 function getNextPath(pathname: string, userChoice: 'reconcile' | 'closure' | null): string | null {
   if (NO_NAV_PAGES.includes(pathname)) return null
   if (pathname === '/reconcile' || pathname === '/closure') return '/future'
-  if (pathname === '/future') return '/easter'
-  if (pathname === '/easter') return '/creator'
+  if (pathname === '/future') return '/creator'
   if (pathname === '/creator') return null
+  if (pathname === '/easter') return null
+  if (pathname === '/memories-of-you') return null
   const idx = LINEAR_FLOW.indexOf(pathname)
   if (idx < 0 || idx >= LINEAR_FLOW.length - 1) return null
   return LINEAR_FLOW[idx + 1]
@@ -44,6 +45,7 @@ function getPageName(pathname: string): string {
     '/future': 'future',
     '/easter': 'easter',
     '/creator': 'creator',
+    '/memories-of-you': 'memories-of-you',
   }
   return map[pathname] || 'intro'
 }
