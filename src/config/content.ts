@@ -171,6 +171,12 @@ export const MEMORIES = [
   },
 ]
 
+// YouTube video IDs — upload each as Unlisted on YouTube, paste the ID from the URL
+// e.g. youtube.com/watch?v=dQw4w9WgXcQ → ID is dQw4w9WgXcQ
+export const AKHIL_YOUTUBE_ID      = 'YOUR_VIDEO_ID_HERE'  // main message (VideoPage)
+export const RECONCILE_YOUTUBE_ID  = 'YOUR_VIDEO_ID_HERE'  // reconcile message
+export const CLOSURE_YOUTUBE_ID    = 'YOUR_VIDEO_ID_HERE'  // closure message
+
 export const AUDIO_MAP: Record<string, string | null> = {
   intro:     '/assets/music/main.mp3',
   apology:   '/assets/music/main.mp3',

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useAppStore } from '../store/useAppStore'
 import { PageLayout } from '../components/layout/PageLayout'
 import { PageTransition } from '../components/transitions/PageTransition'
-import { VideoPlayer } from '../components/ui/VideoPlayer'
+import { CLOSURE_YOUTUBE_ID } from '../config/content'
 
 const PARAGRAPHS = [
   '"You loved me with sincerity, with depth, and with a heart that was real. There was nothing foolish or wrong about the way you loved. You were not \'too much,\' not \'too trusting\' — and not someone who deserved to feel cheated or broken. What you gave was pure — and that will always hold value, no matter how things turned out."',
@@ -134,10 +134,31 @@ export function ClosurePage() {
               }}
             />
 
-            <VideoPlayer
-              src="/assets/videos/closure-message.mp4"
-              label="Akhil's message for closure"
-            />
+            {CLOSURE_YOUTUBE_ID === 'YOUR_VIDEO_ID_HERE' ? (
+              <div
+                style={{
+                  width: '100%', aspectRatio: '16/9', borderRadius: '20px',
+                  background: 'linear-gradient(135deg, var(--blush-100), var(--lav-100))',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.75rem',
+                  boxShadow: '0 16px 48px rgba(204,122,148,0.12)',
+                }}
+              >
+                <span style={{ fontSize: '2rem', opacity: 0.3 }}>▶</span>
+                <span style={{ fontFamily: 'var(--font-ui)', fontSize: '0.6rem', letterSpacing: '0.2em', color: 'var(--text-faint)', textTransform: 'uppercase' }}>
+                  akhil's message · coming soon
+                </span>
+              </div>
+            ) : (
+              <div style={{ width: '100%', aspectRatio: '16/9', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 16px 48px rgba(204,122,148,0.14)' }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${CLOSURE_YOUTUBE_ID}?rel=0&modestbranding=1&color=white`}
+                  title="A message from Akhil"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+                />
+              </div>
+            )}
           </motion.div>
 
           {/* Continue */}
