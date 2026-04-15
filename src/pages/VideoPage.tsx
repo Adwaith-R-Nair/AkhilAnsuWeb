@@ -61,63 +61,111 @@ export function VideoPage() {
             />
           </motion.div>
 
-          {/* Secondary videos — vertical (portrait) layout */}
+          {/* ── Blue reel — special featured placement ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <p
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  fontSize: '0.6rem',
+                  letterSpacing: '0.28em',
+                  textTransform: 'uppercase',
+                  color: 'var(--lav-400)',
+                  marginBottom: '0.25rem',
+                }}
+              >
+                especially for you
+              </p>
+              <p
+                style={{
+                  fontFamily: 'var(--font-script)',
+                  fontSize: '1.5rem',
+                  color: 'var(--blush-500)',
+                  margin: 0,
+                  lineHeight: 1.2,
+                }}
+              >
+                For Blue 💙
+              </p>
+            </div>
+
+            {/* Glowing gradient border frame */}
+            <motion.div
+              animate={{
+                boxShadow: [
+                  '0 0 28px rgba(139,111,212,0.25), 0 8px 40px rgba(139,111,212,0.12)',
+                  '0 0 44px rgba(196,176,240,0.45), 0 8px 48px rgba(139,111,212,0.18)',
+                  '0 0 28px rgba(139,111,212,0.25), 0 8px 40px rgba(139,111,212,0.12)',
+                ],
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              style={{
+                borderRadius: '22px',
+                padding: '3px',
+                background: 'linear-gradient(135deg, rgba(196,176,240,0.8), rgba(228,181,192,0.6), rgba(196,176,240,0.7))',
+                maxWidth: '300px',
+                width: '100%',
+              }}
+            >
+              <div style={{ borderRadius: '20px', overflow: 'hidden' }}>
+                <VideoPlayer
+                  src="/assets/videos/blue-reel.mp4"
+                  vertical
+                  label="for blue · coming soon"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* ── Small reels row ── */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
+            transition={{ delay: 0.7, duration: 0.8 }}
             style={{
               display: 'flex',
-              gap: '2rem',
+              gap: '1.5rem',
               justifyContent: 'center',
               flexWrap: 'wrap',
               width: '100%',
-              maxWidth: '640px',
+              maxWidth: '720px',
             }}
           >
-            {/* Zootopia */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem' }}>
-              <p
-                style={{
-                  fontFamily: 'var(--font-ui)',
-                  fontSize: '0.6rem',
-                  letterSpacing: '0.2em',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-faint)',
-                  margin: 0,
-                }}
+            {[
+              { src: 'zootopia-clip.mp4', label: 'A scene we loved 🦊' },
+              { src: 'reel1.mp4',         label: 'Something for you 🎬' },
+              { src: 'reel2.mp4',         label: 'Just the beginning 🎬' },
+              { src: 'reel3.mp4',         label: 'Delulu 🎬' },
+            ].map((v) => (
+              <div
+                key={v.src}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem' }}
               >
-                A scene we loved 🦊
-              </p>
-              <VideoPlayer
-                src="/assets/videos/zootopia-clip.mp4"
-                small
-                vertical
-                label="zootopia clip · coming soon"
-              />
-            </div>
-
-            {/* Reel */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem' }}>
-              <p
-                style={{
-                  fontFamily: 'var(--font-ui)',
-                  fontSize: '0.6rem',
-                  letterSpacing: '0.2em',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-faint)',
-                  margin: 0,
-                }}
-              >
-                Something for you 🎬
-              </p>
-              <VideoPlayer
-                src="/assets/videos/reel1.mp4"
-                small
-                vertical
-                label="reel · coming soon"
-              />
-            </div>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: '0.6rem',
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-faint)',
+                    margin: 0,
+                  }}
+                >
+                  {v.label}
+                </p>
+                <VideoPlayer
+                  src={`/assets/videos/${v.src}`}
+                  small
+                  vertical
+                  label={`${v.src.replace('.mp4', '')} · coming soon`}
+                />
+              </div>
+            ))}
           </motion.div>
 
           {/* Continue button */}

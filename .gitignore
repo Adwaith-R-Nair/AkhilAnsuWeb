@@ -36,3 +36,8 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Large media — deployed via Vercel CLI directly, not tracked in git
+public/assets/videos/
+public/assets/audio/
+public/assets/ai-videos/
