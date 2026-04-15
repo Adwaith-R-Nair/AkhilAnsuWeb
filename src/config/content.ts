@@ -190,7 +190,7 @@ export const AUDIO_MAP: Record<string, string | null> = {
   future:    '/assets/music/main.mp3',
   easter:          '/assets/music/main.mp3',
   creator:         '/assets/music/main.mp3',
-  'memories-of-you': '/assets/music/main.mp3',
+  'memories-of-you': '/assets/music/vaazha2.mp3',
 }
 
 export const PAGE_ORDER = [
