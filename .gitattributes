@@ -1,0 +1,12 @@
+# Treat all media files as binary to prevent line-ending corruption
+*.mp3 binary
+*.mp4 binary
+*.webm binary
+*.ogg binary
+*.wav binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.webp binary
+*.svg text eol=lf

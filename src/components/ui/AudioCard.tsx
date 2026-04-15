@@ -140,6 +140,7 @@ export function AudioCard({ src, label, index, onPlayed }: AudioCardProps) {
       <audio
         ref={audioRef}
         src={src}
+        preload="none"
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleEnded}
         onError={() => setHasError(true)}
