@@ -6,10 +6,6 @@ import { useAppStore } from '../store/useAppStore'
 import { PageLayout } from '../components/layout/PageLayout'
 import { PageTransition } from '../components/transitions/PageTransition'
 
-// Pre-split title characters so GSAP never touches innerHTML
-const TITLE      = "Ansu & Ichu's World"
-const TITLE_CHARS = TITLE.split('')
-
 const SPARKLES = [
   { top: '14%', left:  '8%',  size: '1.1rem', dur: 4.2 },
   { top: '72%', right: '10%', size: '0.85rem', dur: 5.1 },
@@ -19,14 +15,13 @@ const SPARKLES = [
   { top: '20%', left:  '22%', size: '0.65rem', dur: 3.4 },
 ]
 
-// ─── Cinematic loader — starts opaque, GSAP owns all opacity ────────────────
+// ─── Cinematic loader ────────────────────────────────────────────────────────
 function Loader({ onDone }: { onDone: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const lineRef      = useRef<HTMLDivElement>(null)
   const text1Ref     = useRef<HTMLDivElement>(null)
   const text2Ref     = useRef<HTMLDivElement>(null)
 
-  // onDone is stable (useCallback from parent) — effect won't re-run on parent re-renders
   useEffect(() => {
     const tl = gsap.timeline({ onComplete: onDone })
 
@@ -45,7 +40,6 @@ function Loader({ onDone }: { onDone: () => void }) {
       { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' },
       1.95
     )
-    // Hold then fade out entire overlay
     tl.to(containerRef.current,
       { opacity: 0, duration: 0.8, ease: 'power2.in', pointerEvents: 'none' },
       3.5
@@ -115,25 +109,22 @@ export function IntroPage() {
   const [showLoader, setShowLoader] = useState(!loaderDone)
 
   const heroRef     = useRef<HTMLDivElement>(null)
-  const charsRef    = useRef<HTMLSpanElement[]>([])
   const eyebrowRef  = useRef<HTMLParagraphElement>(null)
+  const titleRef    = useRef<HTMLHeadingElement>(null)
   const subtitleRef = useRef<HTMLParagraphElement>(null)
   const ruleRef     = useRef<HTMLDivElement>(null)
   const btnRef      = useRef<HTMLButtonElement>(null)
 
-  // Track if entrance animation has run (prevent double-invoke)
   const hasAnimatedRef = useRef(false)
-  const entranceTlRef  = useRef<gsap.core.Timeline | null>(null)
 
   useEffect(() => { setCurrentPage('intro') }, [setCurrentPage])
 
-  // Stable callback — prevents Loader's GSAP timeline from restarting on re-renders
   const handleLoaderDone = useCallback(() => {
     setLoaderDone(true)
     setTimeout(() => setShowLoader(false), 100)
   }, [setLoaderDone])
 
-  // Mouse parallax — only after loader
+  // Mouse parallax
   useEffect(() => {
     if (!loaderDone) return
     const onMove = (e: MouseEvent) => {
@@ -151,64 +142,39 @@ export function IntroPage() {
     return () => window.removeEventListener('mousemove', onMove)
   }, [loaderDone])
 
-  // Entrance animations — runs once after loader done
+  // Entrance animations — clean whole-element approach, no per-char opacity
   useEffect(() => {
-    if (!loaderDone) return
-    if (hasAnimatedRef.current) return   // already ran
+    if (!loaderDone || hasAnimatedRef.current) return
     hasAnimatedRef.current = true
 
-    // Use direct GSAP calls — no ctx.revert() which would reset opacity back to 0
-    const tl = gsap.timeline({ delay: 0.15 })
-    entranceTlRef.current = tl
+    const tl = gsap.timeline({ delay: 0.1 })
 
-    // Eyebrow floats up
     tl.fromTo(eyebrowRef.current,
       { opacity: 0, y: 16 },
-      { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }
+      { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }
     )
-    // Title chars cascade in from below with depth
-    tl.fromTo(charsRef.current,
-      { opacity: 0, y: 52, rotateX: -40 },
-      {
-        opacity: 1,
-        y: 0,
-        rotateX: 0,
-        duration: 1.0,
-        stagger: 0.034,
-        ease: 'power3.out',
-      },
-      '-=0.3'
+    tl.fromTo(titleRef.current,
+      { opacity: 0, y: 40, filter: 'blur(10px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.1, ease: 'power3.out' },
+      '-=0.2'
     )
-    // Decorative rule draws itself from center
     tl.fromTo(ruleRef.current,
       { scaleX: 0, transformOrigin: 'center' },
-      { scaleX: 1, duration: 0.65, ease: 'power2.inOut' },
+      { scaleX: 1, duration: 0.7, ease: 'power2.inOut' },
       '-=0.5'
     )
-    // Subtitle rises in
     tl.fromTo(subtitleRef.current,
       { opacity: 0, y: 18 },
-      { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' },
+      { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
       '-=0.35'
     )
-    // Begin button
     tl.fromTo(btnRef.current,
-      { opacity: 0, y: 22 },
-      { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' },
-      '-=0.25'
+      { opacity: 0, y: 18 },
+      { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
+      '-=0.3'
     )
 
-    // Gentle shimmer on chars after they've all arrived
-    tl.to(charsRef.current, {
-      opacity: 0.85,
-      duration: 1.2,
-      stagger: { each: 0.04, repeat: -1, yoyo: true },
-      ease: 'power1.inOut',
-      overwrite: false,
-    }, '+=0.4')
-
-    // Cleanup: kill timeline but DON'T revert — elements keep their final state
-    return () => { entranceTlRef.current?.kill() }
+    return () => { tl.kill() }
   }, [loaderDone])
 
   return (
@@ -260,7 +226,7 @@ export function IntroPage() {
               </motion.span>
             ))}
 
-            {/* Drifting blobs for atmospheric depth */}
+            {/* Drifting blobs */}
             {[0, 1, 2].map((i) => (
               <motion.div
                 key={`blob-${i}`}
@@ -286,7 +252,7 @@ export function IntroPage() {
               />
             ))}
 
-            {/* Hero content — mouse parallax target */}
+            {/* Hero content */}
             <div
               ref={heroRef}
               style={{
@@ -308,35 +274,22 @@ export function IntroPage() {
                 a world that was ours
               </p>
 
-              {/* Title — chars pre-split so GSAP animates existing nodes (no innerHTML flash) */}
+              {/* Title — flowing gradient via CSS, no per-char opacity hack */}
               <h1
+                ref={titleRef}
+                className="title-gradient-flow"
                 style={{
                   fontFamily: 'var(--font-heading)',
                   fontStyle: 'italic',
                   fontSize: 'clamp(3.2rem, 8.5vw, 8rem)',
-                  lineHeight: 1.05,
-                  background: 'linear-gradient(128deg, var(--lav-500) 0%, var(--lavrose) 50%, var(--blush-500) 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  perspective: '800px',
+                  lineHeight: 1.1,
                   letterSpacing: '-0.01em',
                   margin: 0,
+                  opacity: 0,
+                  textShadow: 'none',
                 }}
               >
-                {TITLE_CHARS.map((char, i) => (
-                  <span
-                    key={i}
-                    ref={(el) => { if (el) charsRef.current[i] = el }}
-                    style={{
-                      display: 'inline-block',
-                      opacity: 0,
-                      whiteSpace: char === ' ' ? 'pre' : 'normal',
-                    }}
-                  >
-                    {char}
-                  </span>
-                ))}
+                Ansu &amp; Ichu's World
               </h1>
 
               {/* Decorative rule */}

@@ -244,6 +244,28 @@ body {
   min-height: 100vh;
 }
 
+/* ─── Intro title gradient flow ─── */
+@keyframes titleGradientFlow {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+.title-gradient-flow {
+  background: linear-gradient(
+    120deg,
+    var(--lav-500)   0%,
+    var(--blush-400) 25%,
+    var(--lav-400)   50%,
+    var(--blush-500) 75%,
+    var(--lav-500)   100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleGradientFlow 5s ease-in-out infinite;
+}
+
 /* ─── Heartbeat ─── */
 @keyframes heartbeat {
   0%, 100% { transform: scale(1); }
